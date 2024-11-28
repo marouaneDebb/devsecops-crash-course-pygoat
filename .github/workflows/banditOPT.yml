@@ -1,0 +1,41 @@
+name: Bandit-main-OPT
+
+on: [push]
+
+jobs:
+  sast_scan:
+    name: Run Optimized Bandit Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+
+      - name: Install Bandit
+        run: pip install bandit
+
+      - name: Run Bandit Scan with Optimization
+        run: |
+          # Exclude specific directories (e.g., tests, migrations) to avoid irrelevant scans
+          bandit -r . \
+            --exclude tests,migrations,docs \
+            --confidence-level medium \
+            --severity-level medium \
+            --skip B404,B506 \
+            -f txt \
+            -o bandit-report.txt
+        continue-on-error: true
+
+      - name: Display Optimized Bandit Report
+        run: cat bandit-report.txt
+
+      - name: Upload Bandit Report as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: bandit-report
+          path: bandit-report.txt
